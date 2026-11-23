@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+<title>GSTR-2B vs purchase register reconciler for input tax credit · Open MSME</title>
+<meta name="description" content="Compare the GST portal's GSTR-2B statement against your own purchase register, invoice by invoice, and see exactly which invoices are missing and how much input tax credit is at risk.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/accent.css">
+<link rel="stylesheet" href="assets/app.css">
+<script src="assets/theme-init.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <span class="dot"></span>
+      <b>Open MSME</b>
+      <span class="tag">GSTR-2B reconciler</span>
+    </a>
+    <span class="sp"></span>
+    <button class="themer" data-themer type="button">Theme</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">MSME finance · India</div>
+      <h1>GSTR-2B reconciler that finds the input tax credit you are about to lose</h1>
+      <p class="lede">Match the GST portal's GSTR-2B against your own purchase register, invoice by invoice, and see which invoices your suppliers have not reported — and what that costs you.</p>
+      <div class="who">
+        <span class="pill">Small businesses and their bookkeepers claiming ITC</span>
+        <span class="pill reg">CGST s.16(2)(aa) · Rule 36(4) · GSTR-2B</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="cols calc">
+      <section class="card">
+        <h2>The two files</h2>
+
+        <div class="field">
+          <label for="f-2b">GSTR-2B statement <span class="hint">the JSON file downloaded from the GST portal</span></label>
+          <input type="file" id="f-2b" accept=".json,application/json">
+        </div>
+
+        <div class="field">
+          <label for="f-books">Purchase register <span class="hint">a CSV of your own purchase entries</span></label>
+          <input type="file" id="f-books" accept=".csv,text/csv,text/plain">
+        </div>
+
+        <details class="assumptions pathbox">
+          <summary>Or point at files already on this computer</summary>
+          <div class="field">
+            <label for="p-2b">Path to the GSTR-2B JSON</label>
+            <input type="text" id="p-2b" placeholder="~/Downloads/GSTR2B_29AAGCB7383J1ZS_092025.json" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="p-books">Path to the purchase register CSV</label>
+            <input type="text" id="p-books" placeholder="~/Documents/purchase-register-sep.csv" spellcheck="false">
+          </div>
+        </details>
+
+        <div class="field">
+          <label for="i-tolerance">Tolerance per tax head <span class="hint">how much rounding to forgive</span></label>
+          <div class="inp has-pre">
+            <span class="pre">&#8377;</span>
+            <input type="number" id="i-tolerance" inputmode="decimal" min="0" step="0.01" value="1.00">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="i-label">A name for this check <span class="hint">optional</span></label>
+          <input type="text" id="i-label" placeholder="September 2025">
+        </div>
+
+        <h2 class="blockhead">For the follow-up message</h2>
+        <div class="field">
+          <label for="i-business">Your business name</label>
+          <input type="text" id="i-business" placeholder="Nagarjuna Fabricators">
+        </div>
+        <div class="field">
+          <label for="i-contact">Your phone or email <span class="hint">optional</span></label>
+          <input type="text" id="i-contact" placeholder="accounts@example.in">
+        </div>
+        <div class="field">
+          <label for="i-period">Return period in words <span class="hint">optional — taken from the 2B file if left blank</span></label>
+          <input type="text" id="i-period" placeholder="September 2025">
+        </div>
+
+        <div class="btnrow">
+          <button class="btn primary" id="run" type="button">Reconcile</button>
+          <button class="btn ghost" id="reset" type="button">Clear</button>
+        </div>
+        <p class="hintline" id="status" role="status">Nothing is uploaded anywhere. Both files are read on this computer only.</p>
+        <div class="note bad" id="error" hidden></div>
+      </section>
+
+      <section class="card sticky">
+        <h2>Input tax credit at risk</h2>
+        <div class="result-primary">
+          <div class="k">Total ITC at risk</div>
+          <div class="v" id="r-risk">&#8377;0.00</div>
+          <div class="sub" id="r-sub">Load the two files to check</div>
+        </div>
+
+        <table class="breakdown">
+          <tbody>
+            <tr class="rowrisk">
+              <td>In books, not in GSTR-2B <span class="hint">credit at risk</span></td>
+              <td class="num" id="c-onlybooks">&mdash;</td>
+            </tr>
+            <tr>
+              <td>In GSTR-2B, not in books <span class="hint">purchase not recorded</span></td>
+              <td class="num" id="c-only2b">&mdash;</td>
+            </tr>
+            <tr>
+              <td>Matched, values differ <span class="hint">your books against GSTR-2B</span></td>
+              <td class="num" id="c-mismatch">&mdash;</td>
+            </tr>
+            <tr>
+              <td>Duplicated in books</td>
+              <td class="num" id="c-dups">&mdash;</td>
+            </tr>
+            <tr>
+              <td>Matched and agreeing</td>
+              <td class="num" id="c-matched">&mdash;</td>
+            </tr>
+            <tr class="total">
+              <td>Invoices read</td>
+              <td class="num" id="c-read">&mdash;</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="hintline" id="r-files"></p>
+      </section>
+    </div>
+
+    <section class="card" id="notes-card" hidden>
+      <h2>Worth knowing about these files</h2>
+      <div id="notes"></div>
+    </section>
+
+    <section class="card" id="detail" hidden>
+      <h2>Invoice by invoice</h2>
+      <div class="seg" id="tabs"></div>
+      <p class="hintline" id="cat-note"></p>
+      <div class="tablewrap">
+        <table class="breakdown" id="cat-table">
+          <thead><tr id="cat-head"></tr></thead>
+          <tbody id="cat-body"></tbody>
+        </table>
+      </div>
+      <div class="btnrow">
+        <a class="btn ghost" id="x-csv" href="#" download>Download this list as CSV</a>
+      </div>
+    </section>
+
+    <section class="card" id="followup" hidden>
+      <h2>Message to send each supplier</h2>
+      <p class="hintline">The tool writes the message. You send it yourself, from your own email or messaging app &mdash; nothing is sent from here.</p>
+      <div class="seg" id="sup-tabs"></div>
+      <pre class="msg" id="msg"></pre>
+      <div class="btnrow">
+        <button class="btn ghost" id="copy" type="button">Copy this message</button>
+        <a class="btn ghost" id="dl-msg" href="#" download>Download as text</a>
+        <a class="btn ghost" id="dl-all" href="#" download>All suppliers in one file</a>
+      </div>
+      <p class="hintline" id="copy-status" role="status"></p>
+    </section>
+
+    <section class="card" id="saved" hidden>
+      <h2>Earlier checks on this computer</h2>
+      <div class="tablewrap">
+        <table class="breakdown">
+          <thead>
+            <tr><th>When</th><th>Files</th><th class="num">At risk</th><th></th></tr>
+          </thead>
+          <tbody id="saved-body"></tbody>
+        </table>
+      </div>
+      <p class="hintline" id="saved-note"></p>
+    </section>
+
+    <section class="prose">
+      <h2>How the matching works</h2>
+      <p>An invoice is the same invoice on both sides when three things agree: the <strong>supplier's GSTIN</strong>, the <strong>invoice number</strong> and the <strong>financial year</strong> of the invoice date.</p>
+      <p>Invoice numbers are compared after being reduced to a common form, because the supplier's spelling and yours are rarely identical. The number is upper-cased, spaces and the separators <code>/ - \ .</code> are removed, and the leading zeros of each run of digits are dropped &mdash; so <code>inv-001/23</code>, <code>INV1/23</code> and <code>Inv 001 / 23</code> are all read as the same number.</p>
+      <p>The financial year is part of the key because invoice numbering restarts every 1 April: <code>INV-1</code> of 2025-26 is a different document from <code>INV-1</code> of 2024-25. The Indian financial year runs 1 April to 31 March, so an invoice dated 31 March 2026 belongs to 2025-26 and one dated 1 April 2026 to 2026-27.</p>
+      <p>For invoices found on both sides, the taxable value and each of IGST, CGST, SGST and cess are compared separately. A head that differs by more than the tolerance is reported as a value mismatch, with the difference for each head.</p>
+      <p><strong>Anything in your books but not in GSTR-2B is the number that matters.</strong> Input tax credit can only be taken on an invoice that appears in GSTR-2B, so the tax on those invoices is cash you cannot claim yet. They are totalled as the ITC at risk and grouped by supplier, largest amount first, so you know whom to chase.</p>
+
+      <details class="assumptions">
+        <summary>What is compared, and what is not</summary>
+        <ul>
+          <li>The <strong>B2B section</strong> of GSTR-2B (<code>docdata.b2b</code>) is reconciled. Amendments, credit and debit notes, imports and ISD credit are reported as present but <strong>not</strong> reconciled &mdash; check those by hand.</li>
+          <li>The comparison tolerance is <strong>&#8377;1.00 per tax head</strong> by default, to absorb line-level rounding. Set it to zero to demand the exact paisa.</li>
+          <li>All amounts are held in whole paise, so the totals are exact.</li>
+          <li>A missing figure in either file counts as zero. A missing supplier GSTIN, invoice number or invoice date is reported as an error, because an invoice cannot be matched without all three.</li>
+          <li>Supplier GSTINs in the purchase register are checked for the standard 15-character shape only, not for the check character.</li>
+          <li>Where the same invoice appears twice in your register, the first copy is compared and the rest are listed as duplicates, so nothing is counted twice.</li>
+        </ul>
+      </details>
+
+      <div class="note">This tool compares two files you give it. It cannot tell you whether a credit is eligible: eligibility also depends on receipt of the goods or services, payment of tax by the supplier, the time limit for claiming, blocked credits, and reversal rules. Confirm the current law and your own figures with the GST portal and a qualified practitioner before filing GSTR-3B.</div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+    <span>Runs on your computer. No accounts, no uploads, no telemetry.</span>
+  </div>
+</footer>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

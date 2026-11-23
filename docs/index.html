@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; font-src 'self'; form-action 'self'">
+<title>GSTR-2B vs purchase register reconciler for input tax credit · Open MSME</title>
+<meta name="description" content="Free single-binary tool for Indian small businesses: match the GST portal's GSTR-2B against your purchase register, invoice by invoice, and see which invoices are missing and how much input tax credit is at risk.">
+<meta name="color-scheme" content="light dark">
+<meta property="og:title" content="GSTR-2B vs purchase register reconciler for input tax credit">
+<meta property="og:description" content="Match GSTR-2B against your own purchase register, invoice by invoice, and see exactly which invoices your suppliers have not reported and what that costs you.">
+<meta property="og:type" content="website">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/accent.css">
+<script src="assets/theme-init.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="./">
+      <span class="dot"></span>
+      <b>Open MSME</b>
+      <span class="tag">GSTR-2B reconciler</span>
+    </a>
+    <span class="sp"></span>
+    <a class="home" href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a>
+    <button class="themer" data-themer type="button">Theme</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="eyebrow">MSME finance · India</div>
+      <h1>GSTR-2B reconciler that finds the input tax credit you are about to lose</h1>
+      <p class="lede">A single-binary tool that matches the GST portal's GSTR-2B against your own purchase register, invoice by invoice, totals the credit you cannot yet claim, and writes the follow-up message for each supplier. It runs on your own computer and sends nothing anywhere.</p>
+      <div class="who">
+        <span class="pill">Small businesses and their bookkeepers claiming ITC</span>
+        <span class="pill">India · GST</span>
+        <span class="pill reg">CGST s.16(2)(aa) · Rule 36(4) · GSTR-2B</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <section class="prose">
+      <h2>What it does</h2>
+      <p>Every month the GST portal draws up <strong>GSTR-2B</strong> for you: a statement of the input tax credit available on the purchases your suppliers have reported. Your purchase register is the other half of the picture &mdash; what you actually bought and recorded. Where the two disagree, money is at stake, and the disagreement is invisible until somebody compares them line by line.</p>
+      <p>This tool does that comparison. Give it the GSTR-2B JSON you downloaded from the portal and a CSV of your purchase register, and it sorts every invoice into one of five buckets:</p>
+      <ul>
+        <li><strong>In books, not in GSTR-2B</strong> &mdash; the credit at risk. Your supplier has not reported the invoice, so you cannot claim the tax on it.</li>
+        <li><strong>In GSTR-2B, not in books</strong> &mdash; a purchase you have not recorded, or an invoice reported against your GSTIN that is not yours.</li>
+        <li><strong>Matched, values differ</strong> &mdash; the same invoice on both sides with different figures, broken down head by head.</li>
+        <li><strong>Duplicated in books</strong> &mdash; the same invoice entered twice, which would over-claim the credit.</li>
+        <li><strong>Matched</strong> &mdash; nothing to do.</li>
+      </ul>
+      <p>It then adds up the tax on everything in the first bucket as the <strong>total ITC at risk</strong>, groups it by supplier with the largest amount first, exports any bucket as a CSV, and writes a plain-text message for each supplier listing their missing invoices. You send that message yourself; the tool has no way to send anything.</p>
+
+      <h2>Who it's for</h2>
+      <p>Small businesses in India that claim input tax credit, and the bookkeepers and accountants who do the monthly GST work for them. If you file GSTR-3B and you have more than a handful of purchase invoices, the comparison is too long to do by eye and too important to skip &mdash; every invoice your supplier forgot is tax you paid and cannot recover until it is fixed.</p>
+
+      <h2>The rule it implements</h2>
+      <p>Input tax credit is not available simply because you hold an invoice. Under <strong>section 16(2)(aa) of the Central Goods and Services Tax Act, 2017</strong>, credit on an invoice or debit note may be taken only once the supplier has reported that document in their statement of outward supplies and the details have been <em>communicated to the recipient</em> &mdash; which is exactly what GSTR-2B is.</p>
+      <p><strong>Rule 36(4) of the CGST Rules, 2017</strong> says the same thing from the other side: no credit shall be availed in respect of invoices or debit notes whose details the supplier has not furnished. The earlier cushion that allowed a percentage of provisional credit on unreported invoices is gone, so the ceiling on your claim is what GSTR-2B shows and nothing more.</p>
+      <p>Hence the arithmetic this tool performs: <em>anything in your books but missing from GSTR-2B is cash at risk</em>. The urgency comes from <strong>section 16(4)</strong>, which sets a last date for taking credit on an invoice &mdash; after it passes, a missing invoice is not a delay but a loss. Confirm the current dates and wording on the GST portal or with your practitioner before you rely on them.</p>
+      <p>An invoice is treated as the same invoice on both sides when the <strong>supplier's GSTIN</strong>, the <strong>invoice number</strong> and the <strong>financial year</strong> of the invoice date agree. Invoice numbers are compared after being reduced to a common form &mdash; upper-cased, with spaces and the separators <code>/ - \ .</code> removed and the leading zeros of each run of digits dropped &mdash; so <code>inv-001/23</code>, <code>INV1/23</code> and <code>Inv 001 / 23</code> all read as one number. The financial year is part of the key because invoice numbering restarts every 1 April, so <code>INV-1</code> of 2025-26 is a different document from <code>INV-1</code> of 2024-25.</p>
+
+      <h2>Install &amp; run</h2>
+      <p>It is one Go program with no dependencies beyond the standard library, so there is nothing to install and nothing to configure.</p>
+      <pre><code>git clone https://github.com/sreenivas-sadhu-prabhakara/gstr2b-itc-reconciler.git
+cd gstr2b-itc-reconciler
+
+# build a single binary
+go build -o gstr2b-itc-reconciler .
+./gstr2b-itc-reconciler
+
+# or just run it
+go run .</code></pre>
+      <p>Then open <code>http://127.0.0.1:8080/</code> in a browser. Two flags change the defaults:</p>
+      <pre><code>./gstr2b-itc-reconciler -addr 127.0.0.1:9000 -data ~/gst/reconciler-data.json</code></pre>
+      <p>Download the GSTR-2B <strong>JSON</strong> for the period from the GST portal (Returns dashboard &rarr; GSTR-2B &rarr; download), and export your purchase register as a <strong>CSV</strong>. The headings are read flexibly &mdash; the usual spellings used by spreadsheets and accounting packages are understood, title rows above the headings are skipped, and a total row at the foot is ignored. A register like this works:</p>
+      <pre><code>Supplier GSTIN,Supplier name,Invoice no,Invoice date,Taxable value,IGST,CGST,SGST,Cess
+27AAPFU0939F1ZV,Sundar Metals,INV/001/25-26,15-07-2025,100000.00,18000.00,0,0,0
+29AABCU9603R1ZM,Nandi Hardware,NH-0045,02-08-2025,20000.00,0,1800.00,1800.00,0</code></pre>
+      <p>A supplier GSTIN, an invoice number and an invoice date are needed on every row, because an invoice cannot be matched without all three. Every other figure may be blank and counts as zero.</p>
+
+      <h2>What it stores</h2>
+      <p>One JSON file on your own computer, <code>./gstr2b-itc-reconciler-data.json</code> by default, holding your settings and the last 25 comparisons so you can reopen them. It is written atomically &mdash; to a temporary file that is then renamed &mdash; so an interrupted write cannot corrupt it, and it is created readable only by you.</p>
+      <p>Nothing else leaves the machine. The tool binds to <strong>127.0.0.1</strong>, makes no outbound network calls of any kind, has no accounts, no analytics and no telemetry, and loads no fonts, scripts or styles from anywhere but itself. Your purchase data and your suppliers' details never go anywhere. If you want to delete everything the tool knows, delete that one file.</p>
+
+      <h2>Features</h2>
+      <div class="featgrid">
+        <div class="feat">
+          <h3>Reads the portal's own file</h3>
+          <p>Parses the GSTR-2B JSON download as it comes &mdash; the B2B section, supplier by supplier, adding up every item line &mdash; and tolerates the wrapper, the casing and the missing fields that real files turn up with.</p>
+        </div>
+        <div class="feat">
+          <h3>Matches numbers as humans write them</h3>
+          <p>Invoice numbers are compared in a normalised form, so a slash, a space or three leading zeros does not turn a matched invoice into a missing one.</p>
+        </div>
+        <div class="feat">
+          <h3>Financial-year aware</h3>
+          <p>The 1 April to 31 March year is part of the match key, so repeating invoice numbers across years never cross-match.</p>
+        </div>
+        <div class="feat">
+          <h3>Head-by-head differences</h3>
+          <p>Taxable value, IGST, CGST, SGST and cess are each compared, with a tolerance you set, and the difference is reported per head.</p>
+        </div>
+        <div class="feat">
+          <h3>One number that matters</h3>
+          <p>The total input tax credit sitting in your books but not in GSTR-2B, shown prominently and broken down by supplier, largest first.</p>
+        </div>
+        <div class="feat">
+          <h3>Duplicate catcher</h3>
+          <p>The same invoice entered twice is reported as a duplicate with the tax on the extra copies, so you do not over-claim.</p>
+        </div>
+        <div class="feat">
+          <h3>CSV out</h3>
+          <p>Every category exports as a CSV with plain decimal amounts, ready for a spreadsheet, your accountant or your accounting package.</p>
+        </div>
+        <div class="feat">
+          <h3>Follow-up message, written for you</h3>
+          <p>A plain-text message per supplier listing their missing invoices and the credit involved. You copy it and send it yourself &mdash; the tool cannot send anything.</p>
+        </div>
+      </div>
+
+      <details class="assumptions">
+        <summary>Assumptions &amp; settings</summary>
+        <ul>
+          <li><strong>Comparison tolerance: &#8377;1.00 per tax head</strong>, by default, to absorb line-level rounding. It is a single named constant in the code and can be changed for each run &mdash; set it to zero to demand the exact paisa.</li>
+          <li><strong>Financial year: 1 April to 31 March</strong>, held in one named constant and used to decide which year an invoice date falls in.</li>
+          <li><strong>GSTIN: 15 characters</strong> &mdash; two digits of state code, the ten-character PAN, an entity character, the letter Z and a check character. Only this shape is checked, not the check character; a register row whose GSTIN does not fit the shape is flagged for you to look at, never dropped.</li>
+          <li>Only the <strong>B2B section</strong> of GSTR-2B is reconciled. Amendments, credit and debit notes, imports and ISD credit are reported as present in the file but are not compared &mdash; check those by hand.</li>
+          <li>All amounts are held in whole paise, so totals are exact and never drift.</li>
+          <li>Where the same invoice appears twice in your register, the first copy is compared and the rest are listed as duplicates, so no invoice is counted twice.</li>
+          <li>Statutory provisions are cited as they stood when this was written. Rates, dates and rules change; confirm the current position with the GST portal or a qualified practitioner.</li>
+        </ul>
+      </details>
+
+      <div class="note">This tool compares two files you give it. It does not decide eligibility: a credit also depends on receipt of the goods or services, the supplier having paid the tax, the time limit for claiming, blocked credits and reversal rules. It is not tax advice. Check the figures against your own invoices and confirm the law with the GST portal or a qualified practitioner before filing.</div>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <span>Open MSME &middot; open-source tool for MSMEs in India &amp; the Philippines &middot; MIT</span>
+    <span><a href="https://sreenivas-sadhu-prabhakara.github.io/openmsme/">All tools</a></span>
+  </div>
+</footer>
+
+<script src="assets/ui.js"></script>
+</body>
+</html>

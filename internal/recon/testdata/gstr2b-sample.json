@@ -1,0 +1,140 @@
+{
+  "chksum": "a1b2c3d4e5f60718293a4b5c6d7e8f90",
+  "data": {
+    "gstin": "29AAGCB7383J1ZS",
+    "rtnprd": "092025",
+    "version": "1.0",
+    "gendt": "14-10-2025",
+    "docdata": {
+      "b2b": [
+        {
+          "ctin": "27AAPFU0939F1ZV",
+          "trdnm": "Sundar Metals",
+          "supfilingdt": "11-10-2025",
+          "supprd": "092025",
+          "inv": [
+            {
+              "inum": "INV/001/25-26",
+              "idt": "15-07-2025",
+              "val": 118000.00,
+              "typ": "R",
+              "pos": "27",
+              "rev": "N",
+              "itcavl": "Y",
+              "itms": [
+                {
+                  "num": 1,
+                  "itm_det": {
+                    "rt": 18.00,
+                    "txval": 60000.00,
+                    "iamt": 10800.00,
+                    "camt": 0,
+                    "samt": 0,
+                    "csamt": 0
+                  }
+                },
+                {
+                  "num": 2,
+                  "itm_det": {
+                    "rt": 18.00,
+                    "txval": 40000.00,
+                    "iamt": 7200.00,
+                    "camt": 0,
+                    "samt": 0,
+                    "csamt": 0
+                  }
+                }
+              ]
+            },
+            {
+              "inum": "INV/002/25-26",
+              "idt": "20-07-2025",
+              "val": 59000.00,
+              "typ": "R",
+              "pos": "27",
+              "rev": "N",
+              "itcavl": "Y",
+              "itms": [
+                {
+                  "num": 1,
+                  "itm_det": {
+                    "rt": 18.00,
+                    "txval": 50000.00,
+                    "iamt": 9000.00
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "ctin": "29AABCU9603R1ZM",
+          "trdnm": "Nandi Hardware",
+          "supfilingdt": "10-10-2025",
+          "supprd": "092025",
+          "inv": [
+            {
+              "inum": "NH-0045",
+              "idt": "02-08-2025",
+              "val": 23600.00,
+              "typ": "R",
+              "pos": "29",
+              "rev": "N",
+              "itcavl": "Y",
+              "itms": [
+                {
+                  "num": 1,
+                  "itm_det": {
+                    "rt": 18.00,
+                    "txval": 20000.00,
+                    "iamt": 0,
+                    "camt": 1800.00,
+                    "samt": 1800.00,
+                    "csamt": 0
+                  }
+                }
+              ]
+            },
+            {
+              "inum": "NH-0051",
+              "idt": "09-08-2025",
+              "val": 12300.00,
+              "typ": "R",
+              "pos": "29",
+              "rev": "N",
+              "itcavl": "Y",
+              "itms": [
+                {
+                  "num": 1,
+                  "itm_det": {
+                    "rt": 18.00,
+                    "txval": 10000.00,
+                    "iamt": 0,
+                    "camt": 900.00,
+                    "samt": 900.00,
+                    "csamt": 500.00
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "b2ba": [],
+      "cdnr": [
+        {
+          "ctin": "27AAPFU0939F1ZV",
+          "trdnm": "Sundar Metals",
+          "nt": [
+            {
+              "ntnum": "CN-7",
+              "ntdt": "28-07-2025",
+              "typ": "C",
+              "val": 5900.00
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
